@@ -35,15 +35,26 @@ LABEL name="EOEPCA harvester" \
       version="0.9.0"
 
 
-RUN pip3 install https://github.com/stactools-packages/sentinel2/archive/b6a7fbe01c72085f789dc7d33ab6de706d0ff5b4.tar.gz
+RUN pip3 install \
+    https://github.com/stactools-packages/sentinel2/archive/b6a7fbe01c72085f789dc7d33ab6de706d0ff5b4.tar.gz \
+    pyyaml \
+    s3fs
 
 RUN mkdir /harvester_eoepca
 ADD harvester_eoepca/ \
     /harvester_eoepca/harvester_eoepca
-ADD setup.py \
-    /harvester_eoepca
+ADD setup.py setup.cfg \
+    /harvester_eoepca/
 ADD MANIFEST.in \
     /harvester_eoepca
 
 RUN cd /harvester_eoepca && \
     pip3 install .
+
+
+CMD python3 -m harvester daemon \
+    --config-file /mnt/root/config.yaml \
+    --host redis \
+    --port 6379 \
+    --listen-queue harvest-queue \
+
