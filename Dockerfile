@@ -48,13 +48,9 @@ ADD setup.py setup.cfg \
 ADD MANIFEST.in \
     /harvester_eoepca
 
+ADD run-harvester.sh /
+
 RUN cd /harvester_eoepca && \
     pip3 install .
 
-
-CMD python3 -m harvester daemon \
-    --config-file /mnt/root/config.yaml \
-    --host redis \
-    --port 6379 \
-    --listen-queue harvest-queue \
-
+CMD [ "/run-harvester.sh" ]
