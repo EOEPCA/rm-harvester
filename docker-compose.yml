@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  harvester:
+    image: rm-harvester
+    volumes:
+      - ./harvester_eoepca:/usr/local/lib/python3.8/site-packages/harvester_eoepca/
+      - ./config.yaml:/config.yaml
+    networks:
+      - webnet
+    environment:
+        REDIS_HOST: "redis"
+        REDIS_PORT: "6379"
+        REDIS_HARVESTER_QUEUE_KEY: harvester
+  redis:
+    image: redis:latest
+    networks:
+      - webnet
+    ports:
+      - "6379:6379"
+
+networks:
+  webnet:
