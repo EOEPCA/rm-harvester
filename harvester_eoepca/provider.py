@@ -1,3 +1,5 @@
+import json
+import logging
 from urllib.parse import urlparse
 
 from requests import Response
@@ -6,6 +8,9 @@ import boto3
 from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel2.stac import create_item
 from harvester.endpoint.OpenSearchEndpoint import SearchPage
+
+
+LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class CREODIASS3StacIO(DefaultStacIO):
@@ -57,4 +62,7 @@ class CREODIASOpenSearchSentinel2Provider:
         """
         path = feature['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        return create_item(path).to_dict(include_self_link=False)
+        item = create_item(path).to_dict(include_self_link=False)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(json.dumps(item, indent=4))
+        return item
