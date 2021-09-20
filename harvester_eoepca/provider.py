@@ -57,4 +57,4 @@ class CREODIASOpenSearchSentinel2Provider:
         """
         path = feature['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        return create_item(path)
+        return create_item(path).to_dict(include_self_link=False)
