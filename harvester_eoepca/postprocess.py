@@ -2,12 +2,10 @@ import json
 import logging
 from urllib.parse import urlparse
 
-from requests import Response
-from pystac import Item
 import boto3
+from harvester.abc import Postprocessor
 from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel2.stac import create_item
-from harvester.endpoint.OpenSearchEndpoint import SearchPage
 
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -39,30 +37,16 @@ class CREODIASS3StacIO(DefaultStacIO):
             return super().read_text_from_href(href)
 
 
-class CREODIASOpenSearchSentinel2Provider:
+class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
     """ Takes the result of a Sentinel-2 OpenSearch search and enriches the
         result to create a full STAC item.
     """
-    def parse(self, response: Response):
-        StacIO.set_default(CREODIASS3StacIO)
-        data = response.json()
-        items = [
-            self._to_item(feature) for feature in data['features']
-        ]
-        return SearchPage(
-            items,
-            data['properties']['startIndex'],
-            data['properties']['totalResults'],
-        )
 
-    def _to_item(self, feature: dict) -> Item:
-        """ Picks the `productIdentifier` property of the response feature
-            to generate a valid S3 URL, which is consequently passed to the
-            stactools.sentinel2 library to generate a STAC Item.
-        """
-        path = feature['properties']['productIdentifier']
+    def postprocess(self, item: dict) -> dict:
+        StacIO.set_default(CREODIASS3StacIO)
+        path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        item = create_item(path).to_dict(include_self_link=False)
+        stac_item = create_item(path).to_dict(include_self_link=False)
         if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(item, indent=4))
-        return item
+            LOGGER.debug(json.dumps(stac_item, indent=4))
+        return stac_item
