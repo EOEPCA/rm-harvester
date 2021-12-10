@@ -47,10 +47,5 @@ ADD setup.py setup.cfg \
     /harvester_eoepca/
 ADD MANIFEST.in \
     /harvester_eoepca
-
-ADD run-harvester.sh /
-
 RUN cd /harvester_eoepca && \
     pip3 install .
-
-CMD [ "/run-harvester.sh" ]
