@@ -26,7 +26,7 @@
 #-----------------------------------------------------------------------------
 
 # TODO: make this from a specific release, once released
-FROM registry.gitlab.eox.at/vs/harvester:release-2.1.1
+FROM registry.gitlab.eox.at/vs/harvester:release-2.1.2
 
 LABEL name="EOEPCA harvester" \
       vendor="EOX IT Services GmbH <https://eox.at>" \
