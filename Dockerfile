@@ -26,7 +26,7 @@
 #-----------------------------------------------------------------------------
 
 # TODO: make this from a specific release, once released
-FROM registry.gitlab.eox.at/esa/prism/vs/harvester:harvester-provider
+FROM registry.gitlab.eox.at/vs/harvester:2.1.1
 
 LABEL name="EOEPCA harvester" \
       vendor="EOX IT Services GmbH <https://eox.at>" \
