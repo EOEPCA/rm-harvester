@@ -6,6 +6,8 @@ import boto3
 from harvester.abc import Postprocessor
 from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel2.stac import create_item
+from stactools.sentinel2.product_metadata import ProductMetadata
+from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
 
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -49,4 +51,9 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         stac_item = create_item(path).to_dict(include_self_link=False)
         if LOGGER.isEnabledFor(logging.DEBUG):
             LOGGER.debug(json.dumps(stac_item, indent=4))
+
+        # reset the
+        stac_item["id"] = ProductMetadata(
+            stac_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
+        ).product_id
         return stac_item
