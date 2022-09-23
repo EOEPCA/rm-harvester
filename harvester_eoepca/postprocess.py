@@ -65,6 +65,9 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
         stac_item: pystac.Item = create_item(path)
+        LOGGER.info("START...")
+        LOGGER.info(json.dumps(stac_item, indent=4))
+        LOGGER.info("...END")
 
         # see if we the thumbnail exists, if yes, add it to the STAC Item
         ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
