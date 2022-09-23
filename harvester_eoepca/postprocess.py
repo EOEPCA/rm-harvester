@@ -11,6 +11,7 @@ from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel2.stac import create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
+from stactools.landsat.stac import create_stac_item
 
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -65,9 +66,6 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
         stac_item: pystac.Item = create_item(path)
-        LOGGER.info("START...")
-        LOGGER.info(json.dumps(stac_item, indent=4))
-        LOGGER.info("...END")
 
         # see if we the thumbnail exists, if yes, add it to the STAC Item
         ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
@@ -83,10 +81,41 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
 
         out_item = stac_item.to_dict(include_self_link=False)
         if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(stac_item, indent=4))
+            LOGGER.debug(json.dumps(out_item, indent=4))
+
+        LOGGER.info("START...")
+        LOGGER.info(json.dumps(out_item, indent=4))
+        LOGGER.info("...END")
 
         # reset the
         out_item["id"] = ProductMetadata(
             out_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
         ).product_id
+        return out_item
+
+
+class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
+    """ Takes the result of a Landsat-8 OpenSearch search and creates from
+        it a STAC item.
+    """
+
+    def postprocess(self, item: dict) -> dict:
+        StacIO.set_default(CREODIASS3StacIO)
+
+        # Product identifier
+        product_identifier = item['properties']['productIdentifier'].replace('/eodata/', 's3://EODATA/')
+        short_product_identifier = product_identifier[product_identifier.rfind("/")+1:]
+
+        # Landsat MTL metadata file
+        mtl_xml_file = product_identifier + '/' + short_product_identifier + '_MTL.xml'
+        LOGGER.info(f"mtl_xml_file: {mtl_xml_file}")
+
+        # STAC item
+        stac_item: pystac.Item = create_stac_item(mtl_xml_file)
+        out_item = stac_item.to_dict(include_self_link=False)
+
+        LOGGER.info("START...")
+        LOGGER.info(json.dumps(out_item, indent=4))
+        LOGGER.info("...END")
+
         return out_item
