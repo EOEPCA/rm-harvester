@@ -114,12 +114,19 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
         stac_item: pystac.Item = create_stac_item(mtl_xml_file)
         out_item = stac_item.to_dict(include_self_link=False)
 
-        # Fix-up the 'data' role
+        # Fix-up the STAC role of the asset
+        # ref. https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-roles
         assets = out_item["assets"]
         for asset_name in assets:
             asset = assets[asset_name]
-            if asset["type"].startswith("image/"):
+            if asset_name == "thumbnail":
+                asset["roles"] = ["thumbnail"]
+            elif asset_name == "reduced_resolution_browse":
+                asset["roles"] = ["overview"]
+            elif asset["type"].startswith("image/"):
                 asset["roles"] = ["data"]
+            else:
+                asset["roles"] = ["metadata"]
 
         LOGGER.info("START...")
         LOGGER.info(json.dumps(out_item, indent=4))
