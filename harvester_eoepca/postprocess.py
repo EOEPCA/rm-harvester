@@ -114,6 +114,13 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
         stac_item: pystac.Item = create_stac_item(mtl_xml_file)
         out_item = stac_item.to_dict(include_self_link=False)
 
+        # Fix-up the 'data' role
+        assets = out_item["assets"]
+        for asset_name in assets:
+            asset = assets[asset_name]
+            if asset["type"].startswith("image/"):
+                asset["roles"] = ["data"]
+
         LOGGER.info("START...")
         LOGGER.info(json.dumps(out_item, indent=4))
         LOGGER.info("...END")
