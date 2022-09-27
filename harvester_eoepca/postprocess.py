@@ -125,6 +125,7 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
                 asset["roles"] = ["overview"]
             elif asset["type"].startswith("image/"):
                 asset["roles"] = ["data"]
+                asset["href"] = asset["href"].replace("_SR", "")
             else:
                 asset["roles"] = ["metadata"]
 
