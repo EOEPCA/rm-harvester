@@ -83,10 +83,6 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         if LOGGER.isEnabledFor(logging.DEBUG):
             LOGGER.debug(json.dumps(out_item, indent=4))
 
-        LOGGER.info("START...")
-        LOGGER.info(json.dumps(out_item, indent=4))
-        LOGGER.info("...END")
-
         # reset the
         out_item["id"] = ProductMetadata(
             out_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
@@ -108,11 +104,14 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
 
         # Landsat MTL metadata file
         mtl_xml_file = product_identifier + '/' + short_product_identifier + '_MTL.xml'
-        LOGGER.info(f"mtl_xml_file: {mtl_xml_file}")
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
 
         # STAC item
         stac_item: pystac.Item = create_stac_item(mtl_xml_file)
         out_item = stac_item.to_dict(include_self_link=False)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(json.dumps(out_item, indent=4))
 
         # Fix-up the STAC role of the asset
         # ref. https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-roles
@@ -137,9 +136,5 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
                 out_item["properties"]["collection"] = "L8MSI1TP"
             elif preocessing_level == "L1GT":
                 out_item["properties"]["collection"] = "L8MSI1GT"
-
-        LOGGER.info("START...")
-        LOGGER.info(json.dumps(out_item, indent=4))
-        LOGGER.info("...END")
 
         return out_item
