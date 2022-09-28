@@ -129,6 +129,15 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
             else:
                 asset["roles"] = ["metadata"]
 
+        # Set the collection
+        platform = out_item["properties"]["platform"]
+        preocessing_level = out_item["properties"]["landsat:processing_level"]
+        if platform == "landsat-8":
+            if preocessing_level == "L1TP":
+                out_item["properties"]["collection"] = "L8MSI1TP"
+            elif preocessing_level == "L1GT":
+                out_item["properties"]["collection"] = "L8MSI1GT"
+
         LOGGER.info("START...")
         LOGGER.info(json.dumps(out_item, indent=4))
         LOGGER.info("...END")
