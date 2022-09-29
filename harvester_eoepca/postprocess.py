@@ -11,6 +11,7 @@ from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel2.stac import create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
+from stactools.landsat.stac import create_stac_item
 
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -80,10 +81,60 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
 
         out_item = stac_item.to_dict(include_self_link=False)
         if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(stac_item, indent=4))
+            LOGGER.debug(json.dumps(out_item, indent=4))
 
         # reset the
         out_item["id"] = ProductMetadata(
             out_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
         ).product_id
+        return out_item
+
+
+class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
+    """ Takes the result of a Landsat-8 OpenSearch search and creates from
+        it a STAC item.
+    """
+
+    def postprocess(self, item: dict) -> dict:
+        StacIO.set_default(CREODIASS3StacIO)
+
+        # Product identifier
+        product_identifier = item['properties']['productIdentifier'].replace('/eodata/', 's3://EODATA/')
+        short_product_identifier = product_identifier[product_identifier.rfind("/")+1:]
+
+        # Landsat MTL metadata file
+        mtl_xml_file = product_identifier + '/' + short_product_identifier + '_MTL.xml'
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
+
+        # STAC item
+        stac_item: pystac.Item = create_stac_item(mtl_xml_file)
+        out_item = stac_item.to_dict(include_self_link=False)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(json.dumps(out_item, indent=4))
+
+        # Fix-up the STAC role of the asset
+        # ref. https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-roles
+        assets = out_item["assets"]
+        for asset_name in assets:
+            asset = assets[asset_name]
+            if asset_name == "thumbnail":
+                asset["roles"] = ["thumbnail"]
+            elif asset_name == "reduced_resolution_browse":
+                asset["roles"] = ["overview"]
+            elif asset["type"].startswith("image/"):
+                asset["roles"] = ["data"]
+                asset["href"] = asset["href"].replace("_SR", "")
+            else:
+                asset["roles"] = ["metadata"]
+
+        # Set the collection
+        platform = out_item["properties"]["platform"]
+        preocessing_level = out_item["properties"]["landsat:processing_level"]
+        if platform == "landsat-8":
+            if preocessing_level == "L1TP":
+                out_item["properties"]["collection"] = "L8MSI1TP"
+            elif preocessing_level == "L1GT":
+                out_item["properties"]["collection"] = "L8MSI1GT"
+
         return out_item
