@@ -8,7 +8,8 @@ import botocore
 from harvester.abc import Postprocessor
 import pystac
 from pystac.stac_io import DefaultStacIO, StacIO
-from stactools.sentinel2.stac import create_item
+from stactools.sentinel1.stac import create_item as sentinel1_create_item
+from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
 from stactools.landsat.stac import create_stac_item
@@ -56,6 +57,24 @@ class CREODIASS3StacIO(DefaultStacIO):
                 raise
 
 
+class CREODIASOpenSearchSentinel1Postprocessor(Postprocessor):
+    """ Takes the result of a Sentinel-1 OpenSearch search and enriches the
+        result to create a full STAC item.
+    """
+
+    def postprocess(self, item: dict) -> dict:
+        StacIO.set_default(CREODIASS3StacIO)
+        path = item['properties']['productIdentifier']
+        path = path.replace('/eodata/', 's3://EODATA/') + '/'
+        stac_item: pystac.Item = sentinel1_create_item(path)
+
+        out_item = stac_item.to_dict(include_self_link=False)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(json.dumps(out_item, indent=4))
+
+        return out_item
+
+
 class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
     """ Takes the result of a Sentinel-2 OpenSearch search and enriches the
         result to create a full STAC item.
@@ -65,7 +84,7 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         StacIO.set_default(CREODIASS3StacIO)
         path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = create_item(path)
+        stac_item: pystac.Item = sentinel2_create_item(path)
 
         # see if we the thumbnail exists, if yes, add it to the STAC Item
         ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
