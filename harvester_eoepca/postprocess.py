@@ -8,7 +8,9 @@ import botocore
 from harvester.abc import Postprocessor
 import pystac
 from pystac.stac_io import DefaultStacIO, StacIO
-from stactools.sentinel1.stac import create_item as sentinel1_create_item
+from stactools.sentinel1.grd.stac import create_item as (
+    sentinel1_grd_create_item
+)
 from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
@@ -66,7 +68,7 @@ class CREODIASOpenSearchSentinel1Postprocessor(Postprocessor):
         StacIO.set_default(CREODIASS3StacIO)
         path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = sentinel1_create_item(path)
+        stac_item: pystac.Item = sentinel1_grd_create_item(path)
 
         out_item = stac_item.to_dict(include_self_link=False)
         if LOGGER.isEnabledFor(logging.DEBUG):
