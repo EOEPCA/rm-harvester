@@ -108,6 +108,11 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         out_item["id"] = ProductMetadata(
             out_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
         ).product_id
+
+        # Set the collection
+        if 's2:product_type' in out_item['properties']:
+            out_item["collection"] = out_item['properties']['s2:product_type']
+
         return out_item
 
 
@@ -154,8 +159,8 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
         preocessing_level = out_item["properties"]["landsat:processing_level"]
         if platform == "landsat-8":
             if preocessing_level == "L1TP":
-                out_item["properties"]["collection"] = "L8MSI1TP"
+                out_item["collection"] = "L8MSI1TP"
             elif preocessing_level == "L1GT":
-                out_item["properties"]["collection"] = "L8MSI1GT"
+                out_item["collection"] = "L8MSI1GT"
 
         return out_item
