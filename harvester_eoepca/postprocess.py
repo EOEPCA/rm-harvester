@@ -8,9 +8,7 @@ import botocore
 from harvester.abc import Postprocessor
 import pystac
 from pystac.stac_io import DefaultStacIO, StacIO
-from stactools.sentinel1.grd.stac import create_item as (
-    sentinel1_grd_create_item
-)
+from stactools.sentinel1.grd.stac import create_item as sentinel1_grd_create_item
 from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
