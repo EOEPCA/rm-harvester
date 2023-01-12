@@ -72,6 +72,11 @@ class CREODIASOpenSearchSentinel1Postprocessor(Postprocessor):
         if LOGGER.isEnabledFor(logging.DEBUG):
             LOGGER.debug(json.dumps(out_item, indent=4))
 
+        # Set the collection
+        if 'sar:product_type' in out_item['properties']:
+            if out_item['properties']['s2:product_type'] == 'GRD':
+                out_item["collection"] = 'S1GRD'
+
         return out_item
 
 
