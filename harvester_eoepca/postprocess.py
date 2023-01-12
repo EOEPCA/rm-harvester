@@ -74,7 +74,7 @@ class CREODIASOpenSearchSentinel1Postprocessor(Postprocessor):
 
         # Set the collection
         if 'sar:product_type' in out_item['properties']:
-            if out_item['properties']['s2:product_type'] == 'GRD':
+            if out_item['properties']['sar:product_type'] == 'GRD':
                 out_item["collection"] = 'S1GRD'
 
         return out_item
