@@ -37,7 +37,7 @@ LABEL name="EOEPCA harvester" \
 
 RUN pip3 install \
     stactools-sentinel2==0.3.0 \
-    stactools-landsat==0.2.3 \
+    https://github.com/stactools-packages/landsat/archive/b842e9c7bab5892efa3630988a18d08849059094.tar.gz \
     pyyaml \
     s3fs
 
