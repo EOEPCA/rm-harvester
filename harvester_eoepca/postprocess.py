@@ -12,7 +12,10 @@ from stactools.sentinel1.grd.stac import create_item as sentinel1_grd_create_ite
 from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
-from stactools.landsat.stac import create_stac_item
+from stactools.landsat.stac import create_item as landsat_create_item
+from stactools.landsat.stac import (
+    create_item_from_mtl_text as landsat_create_item_from_mtl_text
+)
 
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -132,12 +135,21 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
         short_product_identifier = product_identifier[product_identifier.rfind("/")+1:]
 
         # Landsat MTL metadata file
-        mtl_xml_file = product_identifier + '/' + short_product_identifier + '_MTL.xml'
-        if LOGGER.isEnabledFor(logging.DEBUG):
+        mtl_xml_file = f"{product_identifier}/{short_product_identifier}_MTL.xml"
+        mtl_text_file = f"{product_identifier}/{short_product_identifier}_MTL.txt"
+
+        stac_io = CREODIASS3StacIO()
+        stac_item: pystac.Item
+        if stac_io.exists(mtl_xml_file):
+            stac_item = landsat_create_item(mtl_xml_file)
             LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
+        elif stac_io.exists(mtl_text_file):
+            stac_item = landsat_create_item_from_mtl_text(mtl_text_file)
+            LOGGER.debug(f"mtl_text_file: {mtl_text_file}")
+        else:
+            raise ValueError("Failed to find xml/text metadata file")
 
         # STAC item
-        stac_item: pystac.Item = create_stac_item(mtl_xml_file)
         out_item = stac_item.to_dict(include_self_link=False)
         if LOGGER.isEnabledFor(logging.DEBUG):
             LOGGER.debug(json.dumps(out_item, indent=4))
