@@ -12,7 +12,7 @@ from stactools.sentinel1.grd.stac import create_item as sentinel1_grd_create_ite
 from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
-from stactools.sentinel3.stac import sentinel3_create_item
+from stactools.sentinel3.stac import create_item as sentinel3_create_item
 from stactools.landsat.stac import create_item as landsat_create_item
 from stactools.landsat.stac import (
     create_item_from_mtl_text as landsat_create_item_from_mtl_text
@@ -132,7 +132,7 @@ class CREODIASOpenSearchSentinel3Postprocessor(Postprocessor):
         StacIO.set_default(CREODIASS3StacIO)
         path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = sentinel2_create_item(path)
+        stac_item: pystac.Item = sentinel3_create_item(path)
 
         # see if we the thumbnail exists, if yes, add it to the STAC Item
         ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
