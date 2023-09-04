@@ -132,7 +132,7 @@ class CREODIASOpenSearchSentinel3Postprocessor(Postprocessor):
         StacIO.set_default(CREODIASS3StacIO)
         path = item['properties']['productIdentifier']
         path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = sentinel3_create_item(path)
+        stac_item: pystac.Item = sentinel3_create_item(path, skip_nc=True)
 
         # see if we the thumbnail exists, if yes, add it to the STAC Item
         ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
