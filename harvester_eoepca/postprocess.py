@@ -77,6 +77,10 @@ class CREODIASOpenSearchSentinel1Postprocessor(Postprocessor):
             if out_item['properties']['sar:product_type'] == 'GRD':
                 out_item["collection"] = 'S1GRD'
 
+        # Set the title
+        if 'title' not in out_item['properties']:
+            out_item['properties']['title'] = out_item['id']
+
         return out_item
 
 
@@ -115,6 +119,10 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         # Set the collection
         if 's2:product_type' in out_item['properties']:
             out_item["collection"] = out_item['properties']['s2:product_type']
+
+        # Set the title
+        if 'title' not in out_item['properties']:
+            out_item['properties']['title'] = out_item['id']
 
         return out_item
 
@@ -165,5 +173,9 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
                 out_item["collection"] = "L8MSI1TP"
             elif preocessing_level == "L1GT":
                 out_item["collection"] = "L8MSI1GT"
+
+        # Set the title
+        if 'title' not in out_item['properties']:
+            out_item['properties']['title'] = out_item['id']
 
         return out_item
