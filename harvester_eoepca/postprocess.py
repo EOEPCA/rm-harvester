@@ -179,3 +179,16 @@ class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
                 out_item["collection"] = "L8MSI1GT"
 
         return out_item
+
+
+class TitlePostprocessor(Postprocessor):
+    """ Adds the title property if not already present and sets it to the items
+        ID.
+    """
+
+    def postprocess(self, item: dict) -> dict:
+        properties = item.get("properties", {})
+        if "title" not in properties:
+            properties["title"] = item["id"]
+
+        return item
