@@ -12,6 +12,7 @@ from stactools.sentinel1.grd.stac import create_item as sentinel1_grd_create_ite
 from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
+from stactools.sentinel3.stac import create_item as sentinel3_create_item
 from stactools.landsat.stac import create_item as landsat_create_item
 from stactools.landsat.stac import (
     create_item_from_mtl_text as landsat_create_item_from_mtl_text
@@ -126,6 +127,40 @@ class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
         # Set the title
         if 'title' not in out_item['properties']:
             out_item['properties']['title'] = out_item['id']
+
+        return out_item
+
+
+class CREODIASOpenSearchSentinel3Postprocessor(Postprocessor):
+    """ Takes the result of a Sentinel-3 OpenSearch search and enriches the
+        result to create a full STAC item.
+    """
+
+    def postprocess(self, item: dict) -> dict:
+        StacIO.set_default(CREODIASS3StacIO)
+        path = item['properties']['productIdentifier']
+        path = path.replace('/eodata/', 's3://EODATA/') + '/'
+        stac_item: pystac.Item = sentinel3_create_item(path, skip_nc=True)
+
+        # see if we the thumbnail exists, if yes, add it to the STAC Item
+        ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
+        if CREODIASS3StacIO().exists(ql_path):
+            stac_item.add_asset(
+                "thumbnail",
+                pystac.Asset(
+                    ql_path,
+                    media_type="image/jpeg",
+                    roles=["thumbnail"],
+                ),
+            )
+
+        out_item = stac_item.to_dict(include_self_link=False)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(json.dumps(out_item, indent=4))
+
+        # Set the collection
+        if 's3:productType' in out_item['properties']:
+            out_item["collection"] = out_item['properties']['s3:productType']
 
         return out_item
 
