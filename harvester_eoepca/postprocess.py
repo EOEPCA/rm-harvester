@@ -5,7 +5,6 @@ from urllib.parse import urlparse
 
 import boto3
 import botocore
-from harvester.abc import Postprocessor
 import pystac
 from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel1.grd.stac import create_item as sentinel1_grd_create_item
@@ -61,181 +60,171 @@ class CREODIASS3StacIO(DefaultStacIO):
                 raise
 
 
-class CREODIASOpenSearchSentinel1Postprocessor(Postprocessor):
+def postprocess_sentinel1(item: dict) -> dict:
     """ Takes the result of a Sentinel-1 OpenSearch search and enriches the
         result to create a full STAC item.
     """
+    StacIO.set_default(CREODIASS3StacIO)
+    path = item['properties']['productIdentifier']
+    path = path.replace('/eodata/', 's3://EODATA/') + '/'
+    stac_item: pystac.Item = sentinel1_grd_create_item(path)
 
-    def postprocess(self, item: dict) -> dict:
-        StacIO.set_default(CREODIASS3StacIO)
-        path = item['properties']['productIdentifier']
-        path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = sentinel1_grd_create_item(path)
+    out_item = stac_item.to_dict(include_self_link=False)
+    if LOGGER.isEnabledFor(logging.DEBUG):
+        LOGGER.debug(json.dumps(out_item, indent=4))
 
-        out_item = stac_item.to_dict(include_self_link=False)
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(out_item, indent=4))
+    # Set the collection
+    if 'sar:product_type' in out_item['properties']:
+        if out_item['properties']['sar:product_type'] == 'GRD':
+            out_item["collection"] = 'S1GRD'
 
-        # Set the collection
-        if 'sar:product_type' in out_item['properties']:
-            if out_item['properties']['sar:product_type'] == 'GRD':
-                out_item["collection"] = 'S1GRD'
+    # Set the title
+    if 'title' not in out_item['properties']:
+        out_item['properties']['title'] = out_item['id']
 
-        # Set the title
-        if 'title' not in out_item['properties']:
-            out_item['properties']['title'] = out_item['id']
-
-        return out_item
+    return out_item
 
 
-class CREODIASOpenSearchSentinel2Postprocessor(Postprocessor):
+def postprocess_sentinel2(item: dict) -> dict:
     """ Takes the result of a Sentinel-2 OpenSearch search and enriches the
         result to create a full STAC item.
     """
+    StacIO.set_default(CREODIASS3StacIO)
+    path = item['properties']['productIdentifier']
+    path = path.replace('/eodata/', 's3://EODATA/') + '/'
+    stac_item: pystac.Item = sentinel2_create_item(path)
 
-    def postprocess(self, item: dict) -> dict:
-        StacIO.set_default(CREODIASS3StacIO)
-        path = item['properties']['productIdentifier']
-        path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = sentinel2_create_item(path)
+    # see if we the thumbnail exists, if yes, add it to the STAC Item
+    ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
+    if CREODIASS3StacIO().exists(ql_path):
+        stac_item.add_asset(
+            "thumbnail",
+            pystac.Asset(
+                ql_path,
+                media_type="image/jpeg",
+                roles=["thumbnail"],
+            ),
+        )
 
-        # see if we the thumbnail exists, if yes, add it to the STAC Item
-        ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
-        if CREODIASS3StacIO().exists(ql_path):
-            stac_item.add_asset(
-                "thumbnail",
-                pystac.Asset(
-                    ql_path,
-                    media_type="image/jpeg",
-                    roles=["thumbnail"],
-                ),
-            )
+    out_item = stac_item.to_dict(include_self_link=False)
+    if LOGGER.isEnabledFor(logging.DEBUG):
+        LOGGER.debug(json.dumps(out_item, indent=4))
 
-        out_item = stac_item.to_dict(include_self_link=False)
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(out_item, indent=4))
+    # reset the
+    out_item["id"] = ProductMetadata(
+        out_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
+    ).product_id
 
-        # reset the
-        out_item["id"] = ProductMetadata(
-            out_item["assets"][PRODUCT_METADATA_ASSET_KEY]["href"]
-        ).product_id
+    # Set the collection
+    if 's2:product_type' in out_item['properties']:
+        out_item["collection"] = out_item['properties']['s2:product_type']
 
-        # Set the collection
-        if 's2:product_type' in out_item['properties']:
-            out_item["collection"] = out_item['properties']['s2:product_type']
+    # Set the title
+    if 'title' not in out_item['properties']:
+        out_item['properties']['title'] = out_item['id']
 
-        # Set the title
-        if 'title' not in out_item['properties']:
-            out_item['properties']['title'] = out_item['id']
-
-        return out_item
+    return out_item
 
 
-class CREODIASOpenSearchSentinel3Postprocessor(Postprocessor):
+def postprocess_sentinel3(item: dict) -> dict:
     """ Takes the result of a Sentinel-3 OpenSearch search and enriches the
         result to create a full STAC item.
     """
+    StacIO.set_default(CREODIASS3StacIO)
+    path = item['properties']['productIdentifier']
+    path = path.replace('/eodata/', 's3://EODATA/') + '/'
+    stac_item: pystac.Item = sentinel3_create_item(path, skip_nc=True)
 
-    def postprocess(self, item: dict) -> dict:
-        StacIO.set_default(CREODIASS3StacIO)
-        path = item['properties']['productIdentifier']
-        path = path.replace('/eodata/', 's3://EODATA/') + '/'
-        stac_item: pystac.Item = sentinel3_create_item(path, skip_nc=True)
+    # see if we the thumbnail exists, if yes, add it to the STAC Item
+    ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
+    if CREODIASS3StacIO().exists(ql_path):
+        stac_item.add_asset(
+            "thumbnail",
+            pystac.Asset(
+                ql_path,
+                media_type="image/jpeg",
+                roles=["thumbnail"],
+            ),
+        )
 
-        # see if we the thumbnail exists, if yes, add it to the STAC Item
-        ql_path = join(path, f"{splitext(basename(normpath(path)))[0]}-ql.jpg")
-        if CREODIASS3StacIO().exists(ql_path):
-            stac_item.add_asset(
-                "thumbnail",
-                pystac.Asset(
-                    ql_path,
-                    media_type="image/jpeg",
-                    roles=["thumbnail"],
-                ),
-            )
+    out_item = stac_item.to_dict(include_self_link=False)
+    if LOGGER.isEnabledFor(logging.DEBUG):
+        LOGGER.debug(json.dumps(out_item, indent=4))
 
-        out_item = stac_item.to_dict(include_self_link=False)
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(out_item, indent=4))
+    # Set the collection
+    if 's3:productType' in out_item['properties']:
+        out_item["collection"] = out_item['properties']['s3:productType']
 
-        # Set the collection
-        if 's3:productType' in out_item['properties']:
-            out_item["collection"] = out_item['properties']['s3:productType']
-
-        return out_item
+    return out_item
 
 
-class CREODIASOpenSearchLandsat8Postprocessor(Postprocessor):
+def postprocess_landsat8(item: dict) -> dict:
     """ Takes the result of a Landsat-8 OpenSearch search and creates from
         it a STAC item.
     """
+    StacIO.set_default(CREODIASS3StacIO)
 
-    def postprocess(self, item: dict) -> dict:
-        StacIO.set_default(CREODIASS3StacIO)
+    # Product identifier
+    product_identifier = item['properties']['productIdentifier'].replace('/eodata/', 's3://EODATA/')
+    short_product_identifier = product_identifier[product_identifier.rfind("/")+1:]
 
-        # Product identifier
-        product_identifier = item['properties']['productIdentifier'].replace('/eodata/', 's3://EODATA/')
-        short_product_identifier = product_identifier[product_identifier.rfind("/")+1:]
+    # Landsat MTL metadata file
+    mtl_xml_file = f"{product_identifier}/{short_product_identifier}_MTL.xml"
+    mtl_text_file = f"{product_identifier}/{short_product_identifier}_MTL.txt"
 
-        # Landsat MTL metadata file
-        mtl_xml_file = f"{product_identifier}/{short_product_identifier}_MTL.xml"
-        mtl_text_file = f"{product_identifier}/{short_product_identifier}_MTL.txt"
+    stac_io = CREODIASS3StacIO()
+    stac_item: pystac.Item
+    if stac_io.exists(mtl_xml_file):
+        stac_item = landsat_create_item(mtl_xml_file)
+        LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
+    elif stac_io.exists(mtl_text_file):
+        stac_item = landsat_create_item_from_mtl_text(mtl_text_file)
+        LOGGER.debug(f"mtl_text_file: {mtl_text_file}")
+    else:
+        raise ValueError("Failed to find xml/text metadata file")
 
-        stac_io = CREODIASS3StacIO()
-        stac_item: pystac.Item
-        if stac_io.exists(mtl_xml_file):
-            stac_item = landsat_create_item(mtl_xml_file)
-            LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
-        elif stac_io.exists(mtl_text_file):
-            stac_item = landsat_create_item_from_mtl_text(mtl_text_file)
-            LOGGER.debug(f"mtl_text_file: {mtl_text_file}")
+    # STAC item
+    out_item = stac_item.to_dict(include_self_link=False)
+    if LOGGER.isEnabledFor(logging.DEBUG):
+        LOGGER.debug(json.dumps(out_item, indent=4))
+
+    # Fix-up the STAC role of the asset
+    # ref. https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-roles
+    assets = out_item["assets"]
+    for asset_name in assets:
+        asset = assets[asset_name]
+        if asset_name == "thumbnail":
+            asset["roles"] = ["thumbnail"]
+        elif asset_name == "reduced_resolution_browse":
+            asset["roles"] = ["overview"]
+        elif asset["type"].startswith("image/"):
+            asset["roles"] = ["data"]
+            asset["href"] = asset["href"].replace("_SR", "")
         else:
-            raise ValueError("Failed to find xml/text metadata file")
+            asset["roles"] = ["metadata"]
 
-        # STAC item
-        out_item = stac_item.to_dict(include_self_link=False)
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(json.dumps(out_item, indent=4))
+    # Set the collection
+    platform = out_item["properties"]["platform"]
+    preocessing_level = out_item["properties"]["landsat:processing_level"]
+    if platform == "landsat-8":
+        if preocessing_level == "L1TP":
+            out_item["collection"] = "L8MSI1TP"
+        elif preocessing_level == "L1GT":
+            out_item["collection"] = "L8MSI1GT"
 
-        # Fix-up the STAC role of the asset
-        # ref. https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-roles
-        assets = out_item["assets"]
-        for asset_name in assets:
-            asset = assets[asset_name]
-            if asset_name == "thumbnail":
-                asset["roles"] = ["thumbnail"]
-            elif asset_name == "reduced_resolution_browse":
-                asset["roles"] = ["overview"]
-            elif asset["type"].startswith("image/"):
-                asset["roles"] = ["data"]
-                asset["href"] = asset["href"].replace("_SR", "")
-            else:
-                asset["roles"] = ["metadata"]
+    # Set the title
+    if 'title' not in out_item['properties']:
+        out_item['properties']['title'] = out_item['id']
 
-        # Set the collection
-        platform = out_item["properties"]["platform"]
-        preocessing_level = out_item["properties"]["landsat:processing_level"]
-        if platform == "landsat-8":
-            if preocessing_level == "L1TP":
-                out_item["collection"] = "L8MSI1TP"
-            elif preocessing_level == "L1GT":
-                out_item["collection"] = "L8MSI1GT"
-
-        # Set the title
-        if 'title' not in out_item['properties']:
-            out_item['properties']['title'] = out_item['id']
-
-        return out_item
+    return out_item
 
 
-class TitlePostprocessor(Postprocessor):
+def postprocess_title(item: dict) -> dict:
     """ Adds the title property if not already present and sets it to the items
         ID.
     """
+    properties = item.get("properties", {})
+    if "title" not in properties:
+        properties["title"] = item["id"]
 
-    def postprocess(self, item: dict) -> dict:
-        properties = item.get("properties", {})
-        if "title" not in properties:
-            properties["title"] = item["id"]
-
-        return item
+    return item
