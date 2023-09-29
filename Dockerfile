@@ -39,11 +39,9 @@ RUN pip3 install \
     stactools-sentinel2==0.3.0 \
     stactools-sentinel3==0.4.0 \
     stactools-landsat==0.4.1 \
+    stactools-sentinel1==0.7.1 \
     pyyaml \
     s3fs
-
-RUN pip3 install --no-dependencies \
-    https://github.com/stactools-packages/sentinel1/archive/874a97aff51caa323064da02f26041bca10e384a.tar.gz
 
 RUN mkdir /harvester_eoepca
 ADD harvester_eoepca/ \
