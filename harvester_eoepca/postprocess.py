@@ -8,6 +8,7 @@ import botocore
 import pystac
 from pystac.stac_io import DefaultStacIO, StacIO
 from stactools.sentinel1.grd.stac import create_item as sentinel1_grd_create_item
+from stactools.sentinel1.slc.stac import create_item as sentinel1_slc_create_item
 from stactools.sentinel2.stac import create_item as sentinel2_create_item
 from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
@@ -67,7 +68,12 @@ def postprocess_sentinel1(item: dict) -> dict:
     StacIO.set_default(CREODIASS3StacIO)
     path = item['properties']['productIdentifier']
     path = path.replace('/eodata/', 's3://EODATA/') + '/'
-    stac_item: pystac.Item = sentinel1_grd_create_item(path)
+
+    product_type = basename(path).split("_")[2]
+    if product_type == "GRD":
+        stac_item: pystac.Item = sentinel1_grd_create_item(path)
+    elif product_type == "SLC":
+        stac_item: pystac.Item = sentinel1_slc_create_item(path)
 
     out_item = stac_item.to_dict(include_self_link=False)
     if LOGGER.isEnabledFor(logging.DEBUG):
@@ -77,6 +83,8 @@ def postprocess_sentinel1(item: dict) -> dict:
     if 'sar:product_type' in out_item['properties']:
         if out_item['properties']['sar:product_type'] == 'GRD':
             out_item["collection"] = 'S1GRD'
+        if out_item['properties']['sar:product_type'] == 'GRD':
+            out_item["collection"] = 'S1SLC'
 
     # Set the title
     if 'title' not in out_item['properties']:
