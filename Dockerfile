@@ -40,7 +40,7 @@ RUN pip3 install \
     stactools-sentinel3==0.4.0 \
     stactools-landsat==0.4.1 \
     stactools-sentinel1==0.7.1 \
-    https://github.com/stactools-packages/sentinel1/archive/5906c661c3f490d7448fd83756d547b5ab23ac22.tar.gz \
+    https://github.com/stactools-packages/sentinel1/archive/ef8ae78c1573f3cf2ea5c7e4051798bbb56d84d9.tar.gz \
     pyyaml \
     boto3 \
     s3fs
