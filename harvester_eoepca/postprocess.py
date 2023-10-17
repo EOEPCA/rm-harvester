@@ -66,10 +66,10 @@ def postprocess_sentinel1(item: dict) -> dict:
         result to create a full STAC item.
     """
     StacIO.set_default(CREODIASS3StacIO)
-    path = item['properties']['productIdentifier']
-    path = path.replace('/eodata/', 's3://EODATA/') + '/'
+    product_id = item['properties']['productIdentifier']
+    path = product_id.replace('/eodata/', 's3://EODATA/') + '/'
 
-    product_type = basename(path).split("_")[2]
+    product_type = basename(product_id).split("_")[2]
     if product_type == "GRD":
         stac_item: pystac.Item = sentinel1_grd_create_item(path)
     elif product_type == "SLC":
