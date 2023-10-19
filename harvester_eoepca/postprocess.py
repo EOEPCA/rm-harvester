@@ -83,7 +83,7 @@ def postprocess_sentinel1(item: dict) -> dict:
     if 'sar:product_type' in out_item['properties']:
         if out_item['properties']['sar:product_type'] == 'GRD':
             out_item["collection"] = 'S1GRD'
-        if out_item['properties']['sar:product_type'] == 'GRD':
+        if out_item['properties']['sar:product_type'] == 'SLC':
             out_item["collection"] = 'S1SLC'
 
     # Set the title
