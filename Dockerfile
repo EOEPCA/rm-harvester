@@ -32,14 +32,13 @@ LABEL name="EOEPCA harvester" \
       vendor="EOX IT Services GmbH <https://eox.at>" \
       license="MIT Copyright (C) 2021 EOX IT Services GmbH <https://eox.at>" \
       type="EOEPCA harvester" \
-      version="0.9.0"
+      version="1.4.0"
 
 
 RUN pip3 install \
     stactools-sentinel2==0.3.0 \
     stactools-sentinel3==0.4.0 \
     stactools-landsat==0.4.1 \
-    stactools-sentinel1==0.7.1 \
     https://github.com/stactools-packages/sentinel1/archive/ef8ae78c1573f3cf2ea5c7e4051798bbb56d84d9.tar.gz \
     pyyaml \
     boto3 \
