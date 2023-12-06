@@ -1,0 +1,16 @@
+--- harvester/src/harvester/app_old.py	2023-12-06 15:19:27.700585245 +0100
++++ harvester/src/harvester/app.py	2023-12-06 14:57:31.420959441 +0100
+@@ -50,6 +50,13 @@
+
+             harvester_name = json.loads(value)["name"]
+
++            # TODO temporary fix, see to have this as a better integrated feature
++            if overrides := json.loads(value).get("values"):
++                root_path = overrides["resource"]["root_path"]
++                harvester_cfg = self.config.harvesters.get(harvester_name)
++                if harvester_cfg and harvester_cfg.resource.staccatalog:
++                    harvester_cfg.resource.staccatalog.root_path = root_path
++
+             # start the harvesting
+             try:
+                 main(self.config, harvester_name)
