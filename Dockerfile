@@ -42,7 +42,7 @@ RUN pip3 install \
     https://github.com/stactools-packages/sentinel1/archive/ef8ae78c1573f3cf2ea5c7e4051798bbb56d84d9.tar.gz \
     pyyaml \
     boto3 \
-    s3fs
+    s3fs==2023.6.0
 
 RUN mkdir /harvester_eoepca
 ADD harvester_eoepca/ \
