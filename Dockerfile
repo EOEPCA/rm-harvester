@@ -55,4 +55,5 @@ RUN cd /harvester_eoepca && \
     pip3 install . && \
     apt-get update && \
     apt-get install -y patch && \
-    patch -u /usr/local/lib/python3.8/site-packages/harvester-4.1.3-py3.8.egg/harvester/app.py -i harvester_eoepca/app.patch
+    patch -u /usr/local/lib/python3.8/site-packages/harvester-4.1.3-py3.8.egg/harvester/app.py -i harvester_eoepca/app.patch && \
+    patch -u /usr/local/lib/python3.8/site-packages/harvester-4.1.3-py3.8.egg/harvester/filescheme/stac_catalog.py -i harvester_eoepca/stac_catalog.patch

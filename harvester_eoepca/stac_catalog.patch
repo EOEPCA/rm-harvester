@@ -1,0 +1,15 @@
+--- filescheme.py	2023-12-07 17:49:41.525114809 +0100
++++ filescheme_new.py	2023-12-07 17:50:43.998353507 +0100
+@@ -40,7 +40,11 @@
+     def harvest(self) -> Iterator[dict]:
+         with authentication_environment(self.filesystem_config):
+             LOGGER.info("Starting STACCatalog harvesting...")
+-            catalog = Catalog.from_file(join(self.root_path, "catalog.json"))
++            if "catalog.json" in self.root_path:
++                root_path = self.root_path
++            else:
++                root_path = join(self.root_path, "catalog.json")
++            catalog = Catalog.from_file(root_path)
+             if self.collection_id:
+                 collection = next(
+                     (
