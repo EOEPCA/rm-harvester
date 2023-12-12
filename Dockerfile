@@ -40,8 +40,8 @@ RUN pip3 install \
     stactools-sentinel3==0.4.0 \
     stactools-landsat==0.5.0 \
     https://github.com/stactools-packages/sentinel1/archive/ef8ae78c1573f3cf2ea5c7e4051798bbb56d84d9.tar.gz \
-    pyyaml \
-    boto3 \
+    PyYAML==6.0.1 \
+    boto3==1.28.17 \
     s3fs==2023.6.0
 
 RUN mkdir /harvester_eoepca
