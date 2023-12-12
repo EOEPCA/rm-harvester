@@ -70,9 +70,9 @@ def postprocess_sentinel1(item: dict) -> dict:
     path = product_id.replace('/eodata/', 's3://EODATA/') + '/'
 
     product_type = basename(product_id).split("_")[2]
-    if product_type == "GRD":
+    if product_type.startswith('GRD'):
         stac_item: pystac.Item = sentinel1_grd_create_item(path)
-    elif product_type == "SLC":
+    elif product_type.startswith('SLC'):
         stac_item: pystac.Item = sentinel1_slc_create_item(path)
 
     out_item = stac_item.to_dict(include_self_link=False)
