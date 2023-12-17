@@ -14,7 +14,8 @@ from stactools.sentinel2.product_metadata import ProductMetadata
 from stactools.sentinel2.constants import PRODUCT_METADATA_ASSET_KEY
 from stactools.sentinel3.stac import create_item as sentinel3_create_item
 from stactools.landsat.stac import create_item as landsat_create_item
-from stactools.landsat.stac import (
+
+from .landsat import (
     create_item_from_mtl_text as landsat_create_item_from_mtl_text
 )
 
