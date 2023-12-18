@@ -184,12 +184,15 @@ def postprocess_landsat8(item: dict) -> dict:
     stac_io = CREODIASS3StacIO()
     stac_item: pystac.Item
     if stac_io.exists(mtl_xml_file):
-        stac_item = landsat_create_item(mtl_xml_file)
+        stac_item = landsat_create_item(
+            mtl_xml_file,
+            use_usgs_geometry=False,
+        )
         LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
     elif stac_io.exists(mtl_text_file):
         stac_item = landsat_create_item_from_mtl_text(
             mtl_text_file,
-            use_usgs_geometry=False
+            use_usgs_geometry=False,
         )
         LOGGER.debug(f"mtl_text_file: {mtl_text_file}")
     else:
