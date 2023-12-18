@@ -36,6 +36,8 @@ LABEL name="EOEPCA harvester" \
 
 
 RUN pip3 install \
+    pystac==1.8.4 \
+    stactools==0.5.3 \
     stactools-sentinel2==0.3.0 \
     stactools-sentinel3==0.4.0 \
     stactools-landsat==0.5.0 \
