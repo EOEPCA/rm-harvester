@@ -34,7 +34,7 @@ def create_item_from_mtl_text(
         root_group.setdefault("IMAGE_ATTRIBUTES", {})
         root_group.setdefault("PRODUCT_CONTENTS", {})
 
-        root_group["PRODUCT_CONTENTS"]["PROCESSING_LEVEL"] = "L1"
+        root_group["PRODUCT_CONTENTS"]["PROCESSING_LEVEL"] = root_group["PRODUCT_METADATA"]["DATA_TYPE"]
         root_group["PRODUCT_CONTENTS"]["LANDSAT_PRODUCT_ID"] = root_group["METADATA_FILE_INFO"]["LANDSAT_PRODUCT_ID"]
         root_group["LEVEL1_PROCESSING_RECORD"]["LANDSAT_SCENE_ID"] = root_group["METADATA_FILE_INFO"]["LANDSAT_SCENE_ID"]
         root_group["PROJECTION_ATTRIBUTES"]["UTM_ZONE"] = root_group["PROJECTION_PARAMETERS"]["UTM_ZONE"]
