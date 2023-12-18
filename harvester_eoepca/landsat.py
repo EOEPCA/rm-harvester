@@ -83,5 +83,3 @@ def create_item_from_mtl_text(
         antimeridian_strategy,
         read_href_modifier=read_href_modifier,
     )
-
-create_item_from_mtl_text("/home/fabian/dev/eoepca/rm-harvester/LC08_L1TP_180034_20200903_20200903_01_RT_MTL.txt")
