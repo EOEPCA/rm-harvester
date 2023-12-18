@@ -187,7 +187,10 @@ def postprocess_landsat8(item: dict) -> dict:
         stac_item = landsat_create_item(mtl_xml_file)
         LOGGER.debug(f"mtl_xml_file: {mtl_xml_file}")
     elif stac_io.exists(mtl_text_file):
-        stac_item = landsat_create_item_from_mtl_text(mtl_text_file)
+        stac_item = landsat_create_item_from_mtl_text(
+            mtl_text_file,
+            use_usgs_geometry=False
+        )
         LOGGER.debug(f"mtl_text_file: {mtl_text_file}")
     else:
         raise ValueError("Failed to find xml/text metadata file")
@@ -214,11 +217,14 @@ def postprocess_landsat8(item: dict) -> dict:
 
     # Set the collection
     platform = out_item["properties"]["platform"]
-    preocessing_level = out_item["properties"]["landsat:processing_level"]
+    processing_level = (
+        out_item["properties"].get("landsat:processing_level")
+        or out_item["properties"].get("landsat:correction")
+    )
     if platform == "landsat-8":
-        if preocessing_level == "L1TP":
+        if processing_level == "L1TP":
             out_item["collection"] = "L8MSI1TP"
-        elif preocessing_level == "L1GT":
+        elif processing_level == "L1GT":
             out_item["collection"] = "L8MSI1GT"
 
     # Set the title
