@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from os.path import basename, splitext, normpath, join
 from urllib.parse import urlparse
 
@@ -22,6 +23,19 @@ from .landsat import (
 
 LOGGER: logging.Logger = logging.getLogger(__name__)
 
+CREODIAS_EODATA_S3_ENDPOINT = os.environ.get(
+    'CREODIAS_EODATA_S3_ENDPOINT', 'http://data.cloudferro.com'
+)
+CREODIAS_EODATA_S3_ACCESS_KEY = os.environ.get(
+    'CREODIAS_EODATA_S3_ACCESS_KEY', 'access'
+)
+CREODIAS_EODATA_S3_ACCESS_SECRET = os.environ.get(
+    'CREODIAS_EODATA_S3_ACCESS_SECRET', 'access'
+)
+CREODIAS_EODATA_S3_REGION = os.environ.get(
+    'CREODIAS_EODATA_S3_REGION', 'RegionOne'
+)
+
 
 class CREODIASS3StacIO(DefaultStacIO):
     """ This subclass of the StacIO class interfaces with the
@@ -30,10 +44,10 @@ class CREODIASS3StacIO(DefaultStacIO):
     def __init__(self):
         self.s3 = boto3.resource(
             "s3",
-            aws_access_key_id='access',
-            aws_secret_access_key='access',
-            endpoint_url='http://data.cloudferro.com',
-            region_name='RegionOne',
+            aws_access_key_id=CREODIAS_EODATA_S3_ACCESS_KEY,
+            aws_secret_access_key=CREODIAS_EODATA_S3_ACCESS_SECRET,
+            endpoint_url=CREODIAS_EODATA_S3_ENDPOINT,
+            region_name=CREODIAS_EODATA_S3_REGION,
             use_ssl=False,
         )
 
